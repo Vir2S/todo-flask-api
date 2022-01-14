@@ -19,7 +19,15 @@ class User(db.Model):
 
 
 class ToDo(db.Model):
-    pass
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(200))
+    is_completed = db.Column(db.Boolean)
+    user_id = db.Column(db.Integer)
+
+
+@app.route("/user", methods=["GET"])
+def get_all_users():
+    return ""
 
 
 if __name__ == "__main__":
