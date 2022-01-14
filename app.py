@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -27,6 +28,26 @@ class ToDo(db.Model):
 
 @app.route("/user", methods=["GET"])
 def get_all_users():
+    return ""
+
+
+@app.route("/user/<user_id>", methods=["GET"])
+def get_user():
+    return ""
+
+
+@app.route("/user", methods=["POST"])
+def create_user():
+    return ""
+
+
+@app.route("/user/user_id", methods=["PUT"])
+def edit_user():
+    return ""
+
+
+@app.route("/user/user_id", methods=["DELETE"])
+def delete_user():
     return ""
 
 
