@@ -24,7 +24,7 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
 
 
-class ToDo(db.Model):
+class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(200))
     is_completed = db.Column(db.Boolean)
@@ -53,7 +53,7 @@ def token_required(func):
     return decorated
 
 
-@app.route("/user", methods=["GET"])
+@app.route("/user/", methods=["GET"])
 @token_required
 def get_all_users(current_user):
 
@@ -74,7 +74,7 @@ def get_all_users(current_user):
     return jsonify({"users": context})
 
 
-@app.route("/user/<public_id>", methods=["GET"])
+@app.route("/user/<public_id>/", methods=["GET"])
 @token_required
 def get_user(current_user, public_id):
 
@@ -94,7 +94,7 @@ def get_user(current_user, public_id):
     return jsonify({"user": user_data})
 
 
-@app.route("/user", methods=["POST"])
+@app.route("/user/", methods=["POST"])
 @token_required
 def create_user(current_user):
 
@@ -118,7 +118,7 @@ def create_user(current_user):
     return jsonify({"message": "New user created!"})
 
 
-@app.route("/user/public_id", methods=["PUT"])
+@app.route("/user/public_id/", methods=["PUT"])
 @token_required
 def edit_user(current_user, public_id):
 
@@ -136,7 +136,7 @@ def edit_user(current_user, public_id):
     return jsonify({"message": "User has been updated"})
 
 
-@app.route("/user/public_id", methods=["DELETE"])
+@app.route("/user/public_id/", methods=["DELETE"])
 @token_required
 def delete_user(current_user, public_id):
 
@@ -154,7 +154,7 @@ def delete_user(current_user, public_id):
     return jsonify({"message": "User has been deleted"})
 
 
-@app.route("/login")
+@app.route("/login/")
 def login():
     auth = request.authorization
 
