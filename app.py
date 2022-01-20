@@ -195,7 +195,14 @@ def get_todo(current_user, todo_id):
 @app.route("/todo/", methods=["POST"])
 @token_required
 def create_todo(current_user):
-    pass
+    data = request.get_json()
+
+    new_todo = Todo(text=data["text"], is_complete=False, user_id=current_user.id)
+
+    db.session.add(new_todo)
+    db.session.commit()
+
+    return jsonify({"message": "Todo created!"})
 
 
 @app.route("/todo/<todo_id>/", methods=["PUT"])
