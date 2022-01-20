@@ -181,27 +181,32 @@ def login():
 
 
 @app.route("/todo/", methods=["GET"])
-def get_all_todos():
+@token_required
+def get_all_todos(current_user):
     pass
 
 
 @app.route("/todo/<todo_id>/", methods=["GET"])
-def get_todo():
+@token_required
+def get_todo(current_user, todo_id):
     pass
 
 
 @app.route("/todo/", methods=["POST"])
-def create_todo():
+@token_required
+def create_todo(current_user):
     pass
 
 
 @app.route("/todo/<todo_id>/", methods=["PUT"])
-def complete_todo():
+@token_required
+def complete_todo(current_user, todo_id):
     pass
 
 
-@app.route("/todo/<todo_idd>/", methods=["DELETE"])
-def delete_todo():
+@app.route("/todo/<todo_id>/", methods=["DELETE"])
+@token_required
+def delete_todo(current_user, todo_id):
     pass
 
 
