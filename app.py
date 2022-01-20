@@ -183,7 +183,18 @@ def login():
 @app.route("/todo/", methods=["GET"])
 @token_required
 def get_all_todos(current_user):
-    pass
+    all_todos = Todo.query.filter_by(user_id=current_user.id).all()
+
+    context = []
+
+    for todo in all_todos:
+        todo_data = {}
+        todo_data["id"] = todo.id
+        todo_data["text"] = todo.text
+        todo_data["is_completed"] = todo.is_completed
+        context.append(todo_data)
+
+    return jsonify({"all_todos": context})
 
 
 @app.route("/todo/<todo_id>/", methods=["GET"])
