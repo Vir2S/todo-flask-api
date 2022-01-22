@@ -57,102 +57,99 @@ def token_required(func):
 @token_required
 def get_all_users(current_user):
 
-    if not current_user.is_admin:
-        return jsonify({"message": "Permission denied!"})
+    if current_user.is_admin:
+        users = User.query.all()
+        context = []
 
-    users = User.query.all()
+        for user in users:
+            user_data = {}
+            user_data["public_id"] = user.public_id
+            user_data["name"] = user.name
+            user_data["is_admin"] = user.is_admin
+            context.append(user_data)
 
-    context = []
+        return jsonify({"users": context})
 
-    for user in users:
-        user_data = {}
-        user_data["public_id"] = user.public_id
-        user_data["name"] = user.name
-        user_data["is_admin"] = user.is_admin
-        context.append(user_data)
-
-    return jsonify({"users": context})
+    return jsonify({"message": "Permission denied!"})
 
 
 @app.route("/user/<public_id>/", methods=["GET"])
 @token_required
 def get_user(current_user, public_id):
 
-    if not current_user.is_admin:
-        return jsonify({"message": "Permission denied!"})
+    if current_user.is_admin:
+        user = User.query.filter_by(public_id=public_id).first()
 
-    user = User.query.filter_by(public_id=public_id).first()
+        if user:
+            user_data = {}
+            user_data["public_id"] = user.public_id
+            user_data["name"] = user.name
+            user_data["is_admin"] = user.is_admin
 
-    if not user:
+            return jsonify({"user": user_data})
+
         return jsonify({"message": "User not found!"})
 
-    user_data = {}
-    user_data["public_id"] = user.public_id
-    user_data["name"] = user.name
-    user_data["is_admin"] = user.is_admin
-
-    return jsonify({"user": user_data})
+    return jsonify({"message": "Permission denied!"})
 
 
 @app.route("/user/", methods=["POST"])
 @token_required
 def create_user(current_user):
 
-    if not current_user.is_admin:
-        return jsonify({"message": "Permission denied!"})
+    if current_user.is_admin:
+        data = request.get_json()
+        hashed_password = generate_password_hash(data["password"], method="sha256")
 
-    data = request.get_json()
+        new_user = User(
+            public_id=str(uuid.uuid4()),
+            name=data["name"],
+            password=hashed_password,
+            admin=False
+        )
 
-    hashed_password = generate_password_hash(data["password"], method="sha256")
+        db.session.add(new_user)
+        db.session.commit()
 
-    new_user = User(
-        public_id=str(uuid.uuid4()),
-        name=data["name"],
-        password=hashed_password,
-        admin=False
-    )
+        return jsonify({"message": "New user created!"})
 
-    db.session.add(new_user)
-    db.session.commit()
-
-    return jsonify({"message": "New user created!"})
+    return jsonify({"message": "Permission denied!"})
 
 
 @app.route("/user/public_id/", methods=["PUT"])
 @token_required
 def edit_user(current_user, public_id):
 
-    if not current_user.is_admin:
-        return jsonify({"message": "Permission denied!"})
+    if current_user.is_admin:
+        user = User.query.filter_by(public_id=public_id).first()
 
-    user = User.query.filter_by(public_id=public_id).first()
+        if user:
+            user.is_admin = True
+            db.session.commit()
 
-    if not user:
-        return jsonify({"message": "User not found!"})
+            return jsonify({"message": "User not found!"})
 
-    user.is_admin = True
-    db.session.commit()
+        return jsonify({"message": "User has been updated"})
 
-    return jsonify({"message": "User has been updated"})
+    return jsonify({"message": "Permission denied!"})
 
 
 @app.route("/user/public_id/", methods=["DELETE"])
 @token_required
 def delete_user(current_user, public_id):
 
-    if not current_user.is_admin:
-        return jsonify({"message": "Permission denied!"})
+    if current_user.is_admin:
+        user = User.query.filter_by(public_id=public_id).first()
 
-    user = User.query.filter_by(public_id=public_id).first()
+        if user:
+            db.session.delete(user)
+            db.session.commit()
 
-    if not user:
+            return jsonify({"message": "User has been deleted"})
+
         return jsonify({"message": "User not found!"})
 
-    db.session.delete(user)
-    db.session.commit()
-
-    return jsonify({"message": "User has been deleted"})
-
+    return jsonify({"message": "Permission denied!"})
 
 @app.route("/login/")
 def login():
@@ -202,15 +199,15 @@ def get_all_todos(current_user):
 def get_todo(current_user, todo_id):
     todo = Todo.query.filter_by(id=todo_id, user_id=current_user.id).first()
 
-    if not todo:
-        return jsonify({"message": "No todo found!"})
+    if todo:
+        todo_data = {}
+        todo_data["id"] = todo.id
+        todo_data["text"] = todo.text
+        todo_data["is_completed"] = todo.is_completed
 
-    todo_data = {}
-    todo_data["id"] = todo.id
-    todo_data["text"] = todo.text
-    todo_data["is_completed"] = todo.is_completed
+        return jsonify(todo_data)
 
-    return jsonify(todo_data)
+    return jsonify({"message": "No todo found!"})
 
 
 @app.route("/todo/", methods=["POST"])
@@ -231,14 +228,12 @@ def create_todo(current_user):
 def complete_todo(current_user, todo_id):
     todo = Todo.query.filter_by(id=todo_id, user_id=current_user.id).first()
 
-    if not todo:
-        return jsonify({"message": "No todo found!"})
+    if todo:
+        todo.is_completed = True
+        db.session.commit()
+        return jsonify({"message": "Todo item has been completed!"})
 
-    todo.is_completed = True
-
-    db.session.commit()
-
-    return jsonify({"message": "Todo item has been completed!"})
+    return jsonify({"message": "No todo found!"})
 
 
 @app.route("/todo/<todo_id>/", methods=["DELETE"])
@@ -246,13 +241,12 @@ def complete_todo(current_user, todo_id):
 def delete_todo(current_user, todo_id):
     todo = Todo.query.filter_by(id=todo_id, user_id=current_user.id).first()
 
-    if not todo:
-        return jsonify({"message": "No todo found!"})
+    if todo:
+        db.session.delete(todo)
+        db.session.commit()
+        return jsonify({"message": "Todo item deleted!"})
 
-    db.session.delete(todo)
-    db.session.commit()
-
-    return jsonify({"message": "Todo item deleted!"})
+    return jsonify({"message": "No todo found!"})
 
 
 if __name__ == "__main__":
